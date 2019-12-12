@@ -6,6 +6,8 @@ import { ExportFormat, EXPORT_FORMATS } from '../../models/export';
 import { Locale } from '../../models/locale';
 import { Project } from '../../models/project';
 import { ExportService } from '../../services/export.service';
+import {Local} from 'protractor/built/driverProviders';
+import {debug} from 'util';
 
 @Component({
   selector: 'app-export-locale',
@@ -19,10 +21,12 @@ export class ExportLocaleComponent implements OnInit {
   @Input()
   locales: Locale[];
 
-  @Input()
-  loading = false;
+  private loadingCount = 0;
 
-  selectedLocale: Locale;
+  @Input()
+  loading = this.loadingCount > 0;
+
+  selectedLocale: [Locale?] = [];
   selectedFormat: ExportFormat;
   availableFormats = EXPORT_FORMATS;
 
@@ -33,11 +37,15 @@ export class ExportLocaleComponent implements OnInit {
   ngOnInit() {}
 
   validInputs() {
-    return !!this.selectedFormat && !!this.selectedLocale;
+    return !!this.selectedFormat && this.selectedLocale.length > 0;
   }
 
   selectLocale(locale: Locale) {
-    this.selectedLocale = locale;
+    this.selectedLocale.push(locale);
+  }
+
+  deselectLocale(locale: Locale) {
+    this.selectedLocale.splice(this.selectedLocale.indexOf(locale), 1);
   }
 
   async export() {
@@ -46,18 +54,23 @@ export class ExportLocaleComponent implements OnInit {
     }
 
     this.errorMessage = undefined;
-    this.loading = true;
+    this.loadingCount = 0;
 
-    await this.exportService
-      .exportAndDownload(this.project.id, this.selectedLocale.code, this.selectedFormat)
-      .pipe(
-        catchError(error => {
-          console.error(error);
-          this.errorMessage = errorToMessage(error, 'ExportLocale');
-          return throwError(error);
-        }),
-        finalize(() => (this.loading = false)),
-      )
-      .toPromise();
+    debugger
+    for (const locale of this.selectedLocale) {
+      this.loadingCount++;
+      await this.exportService
+        .exportAndDownload(this.project.id, locale.code, this.selectedFormat)
+        .pipe(
+          catchError(error => {
+            this.errorMessage = errorToMessage(error, 'ExportLocale');
+            return throwError(error);
+          }),
+          finalize(() => {
+            this.loadingCount--;
+            debugger
+          })
+        );
+    }
   }
 }

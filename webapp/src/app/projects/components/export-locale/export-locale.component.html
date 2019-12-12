@@ -12,7 +12,9 @@
     [locales]="locales"
     [limit]="5"
     [loading]="loading"
+    [selectOneLocale]="false"
     (selectLocale)="selectLocale($event)"
+    (deselectLocale)="deselectLocale($event)"
   ></app-select-locale>
 </div>
 

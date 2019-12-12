@@ -7,3 +7,15 @@
   transition: background-color 150ms ease;
   cursor: pointer;
 }
+
+.list-group-item.active {
+  border-color: #FFFFFF;
+}
+
+.locale-list-container {
+  max-width: 70%;
+}
+
+.locale-code-list-container {
+  max-width: 30%;
+}

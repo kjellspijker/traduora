@@ -24,10 +24,16 @@ export class SelectLocaleComponent implements OnInit, OnChanges {
   @Input()
   preserveHeight = false;
 
+  @Input()
+  selectOneLocale = true;
+
   @Output()
   selectLocale = new EventEmitter<Locale>();
 
-  selection: Locale | undefined;
+  selection: [Locale?] = [];
+
+  @Output()
+  deselectLocale = new EventEmitter<Locale>();
 
   text$ = new BehaviorSubject<string>('');
 
@@ -69,8 +75,16 @@ export class SelectLocaleComponent implements OnInit, OnChanges {
   }
 
   select(locale: Locale) {
-    this.selection = locale;
-    this.selectLocale.emit(locale);
+    if (this.selectOneLocale) {
+      this.selection = [];
+    }
+    if (this.selection.includes(locale) && !this.selectOneLocale) {
+      this.selection.splice(this.selection.indexOf(locale), 1);
+      this.deselectLocale.emit(locale);
+    } else {
+      this.selection.push(locale);
+      this.selectLocale.emit(locale);
+    }
   }
 
   defaultLocales(): Locale[] {
@@ -88,5 +102,9 @@ export class SelectLocaleComponent implements OnInit, OnChanges {
 
   localeToSearchString(locale: Locale): string {
     return `${locale.language} ${locale.region} ${locale.code}`.toLowerCase();
+  }
+
+  isActive(locale: Locale) {
+    return this.selection.includes(locale);
   }
 }
